@@ -10,12 +10,12 @@ The example dataset is [TJH dataset](https://www.nature.com/articles/s42256-020-
 ### Rule-based
 
 
-- [ ] forward fill
-- [ ] 0 fill
-- [ ] mean fill
-- [ ] median fill
-- [ ] mode fill
-- [ ] simple (concatenating the measurement with masking and time interval)
+- [ ] `LOCFImpute` (last-observation-carried-forward)
+- [ ] `ZeroImpute`
+- [ ] `MeanImpute`
+- [ ] `MedianImpute`
+- [ ] `ModeImpute`
+- [ ] `GRUDSimpleImpute` (GRU-D Simple, concatenating the measurement with masking and time interval)
 
 ### ML-based
 
