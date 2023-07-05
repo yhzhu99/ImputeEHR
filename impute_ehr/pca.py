@@ -4,3 +4,5 @@ class PCAImpute:
         self.val_ds = train_ds
     def fill(self):
         pass
+    def execute(self):
+        pass
