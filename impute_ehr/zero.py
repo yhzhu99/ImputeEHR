@@ -10,4 +10,4 @@ class ZeroImpute:
         pass
 
     def execute(self, ds: pd.DataFrame):
-        return ds.fillna(0)
+        return ds.copy(deep=True).fillna(0)

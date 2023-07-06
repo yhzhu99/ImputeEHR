@@ -11,7 +11,7 @@ The example dataset is [TJH dataset](https://www.nature.com/articles/s42256-020-
 
 
 - [ ] `LOCFImpute` (last-observation-carried-forward)
-- [ ] `ZeroImpute`
+- [x] `ZeroImpute`
 - [ ] `MeanImpute`
 - [ ] `MedianImpute`
 - [ ] `ModeImpute`
@@ -22,7 +22,7 @@ The example dataset is [TJH dataset](https://www.nature.com/articles/s42256-020-
 - [ ] interpolation
 - [ ] smoothing
 - [ ] spline
-- [ ] k-nearest neighbor
+- [x] k-nearest neighbor
 - [ ] multiple imputation by chained equations
 - [ ] random forest (e.g. MissForest)
 - [ ] matrix factorization

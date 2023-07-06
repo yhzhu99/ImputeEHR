@@ -40,3 +40,24 @@ Path(f"./datasets/imputed/{method}").mkdir(parents=True, exist_ok=True)
 train_ds_imputed.to_csv(f"./datasets/imputed/{method}/train.csv", index=False)
 val_ds_imputed.to_csv(f"./datasets/imputed/{method}/val.csv", index=False)
 test_ds_imputed.to_csv(f"./datasets/imputed/{method}/test.csv", index=False)
+
+########################
+# 2. KNN Imputation
+########################
+
+method = "KNNImpute"
+# init the pipeline
+pipeline = getattr(impute_ehr, method)(train_ds)
+# fit the imputation model if required
+if pipeline.require_fit:
+    pipeline.fit()
+# execute the imputation pipeline
+train_ds_imputed = pipeline.execute(train_ds)
+val_ds_imputed = pipeline.execute(val_ds)
+test_ds_imputed = pipeline.execute(test_ds)
+# save the imputed dataset
+Path(f"./datasets/imputed/{method}").mkdir(parents=True, exist_ok=True)
+train_ds_imputed.to_csv(f"./datasets/imputed/{method}/train.csv", index=False)
+val_ds_imputed.to_csv(f"./datasets/imputed/{method}/val.csv", index=False)
+test_ds_imputed.to_csv(f"./datasets/imputed/{method}/test.csv", index=False)
+
