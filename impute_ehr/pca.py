@@ -5,6 +5,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.decomposition import PCA
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.neighbors import KNeighborsRegressor
+from sklearn.impute import SimpleImputer
 # from sklearn.preprocessing import Imputer
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
@@ -12,10 +13,16 @@ from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 class PCAImpute(BaseEstimator, TransformerMixin):
     def __init__(self, train_ds: pd.DataFrame):
         self.train_ds = train_ds
+        self.initial_imputer = SimpleImputer(strategy='mean')
         self.require_fit = True
+        self.max_iter = 10
+        self.tol = 1e-3
 
     def fit(self):
-        X = check_array(self.train_ds, dtype=np.float64,
+        ds = self.train_ds.copy(deep=True)
+        # cols of time datatype should not be involved in PCA.
+        ds = ds.iloc[:, 4:]
+        X = check_array(ds, dtype=np.float64,
                         force_all_finite=False)
 
         X_nan = np.isnan(X)
@@ -61,8 +68,12 @@ class PCAImpute(BaseEstimator, TransformerMixin):
         return self
 
     def execute(self, ds: pd.DataFrame):
+        ds = ds.copy(deep=True)
+
+        # cols of time datatype should not be involved in PCA.
+        imputed_ds = ds.iloc[:, 4:]
         check_is_fitted(self, ['statistics_', 'estimators_', 'gamma_'])
-        X = check_array(ds, copy=True, dtype=np.float64,
+        X = check_array(imputed_ds, copy=True, dtype=np.float64,
                         force_all_finite=False)
         if X.shape[1] != self.statistics_.shape[1]:
             raise ValueError("X has %d features per sample, expected %d"
@@ -84,5 +95,7 @@ class PCAImpute(BaseEstimator, TransformerMixin):
             estimator_ = self.estimators_[0]
             X[X_nan] = estimator_.inverse_transform(
                 estimator_.transform(imputed))[X_nan]
+
+        X = pd.DataFrame(X)
 
         return X
