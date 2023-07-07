@@ -3,10 +3,7 @@ import numpy as np
 
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.decomposition import PCA
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.neighbors import KNeighborsRegressor
 from sklearn.impute import SimpleImputer
-# from sklearn.preprocessing import Imputer
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 
@@ -67,11 +64,30 @@ class PCAImpute(BaseEstimator, TransformerMixin):
 
         return self
 
+
     def execute(self, ds: pd.DataFrame):
         ds = ds.copy(deep=True)
 
         # cols of time datatype should not be involved in PCA.
         imputed_ds = ds.iloc[:, 4:]
+
+        # call the real execute function to impute ds
+        X = self.transform(imputed_ds)
+
+        # get imputed result with column name
+        imputed_ds = pd.DataFrame(
+            data=X,
+            columns=imputed_ds.columns
+        )
+        # get cols having datatype of time.
+        # index should be reset to solve row mismatch bug
+        rest_ds = ds.iloc[:, :4]
+        rest_ds.reset_index(drop=True, inplace=True)
+
+        return pd.concat([rest_ds, imputed_ds], axis=1)
+
+    # the real execute function. impute dataset with valid col datatype
+    def transform(self, imputed_ds: pd.DataFrame):
         check_is_fitted(self, ['statistics_', 'estimators_', 'gamma_'])
         X = check_array(imputed_ds, copy=True, dtype=np.float64,
                         force_all_finite=False)
@@ -95,7 +111,6 @@ class PCAImpute(BaseEstimator, TransformerMixin):
             estimator_ = self.estimators_[0]
             X[X_nan] = estimator_.inverse_transform(
                 estimator_.transform(imputed))[X_nan]
-
-        X = pd.DataFrame(X)
-
         return X
+
+
