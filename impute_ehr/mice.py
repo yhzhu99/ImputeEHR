@@ -1,12 +1,17 @@
 import pandas as pd
-from sklearn.impute import KNNImputer
+from sklearn.experimental import enable_iterative_imputer
+from sklearn.impute import IterativeImputer
+from sklearn.linear_model import BayesianRidge
 
-
-class KNNImpute:
+class MICEImpute:
     def __init__(self, train_ds: pd.DataFrame):
         self.train_ds = train_ds
         self.require_fit = True
-        self.imputer = KNNImputer(n_neighbors=5, weights="uniform")
+        self.imputer = IterativeImputer(
+            estimator=BayesianRidge(),
+            max_iter=10,
+            tol=1e-3
+        )
 
     def fit(self):
         """ Fit the imputer on train_ds.
@@ -14,7 +19,7 @@ class KNNImpute:
         Returns
         -------
         self : object
-            The fitted `KNNImputer` class instance.
+            The fitted `MICEImputer` class instance.
         """
         ds = self.train_ds.copy(deep=True)
         # cols of time datatype should not be involved in KNN.
@@ -38,8 +43,10 @@ class KNNImpute:
 
         # cols of time datatype should not be involved in KNN.
         imputed_ds = ds.iloc[:, 4:]
+        # impute ds
+        X = self.imputer.transform(imputed_ds)
         imputed_ds = pd.DataFrame(
-            data=self.imputer.transform(imputed_ds),
+            data=X,
             columns=imputed_ds.columns
         )
         # value should not be negative
