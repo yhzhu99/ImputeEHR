@@ -1,12 +1,13 @@
 import pandas as pd
-from sklearn.impute import KNNImputer
+from sklearn.decomposition import NMF
+from sklearn.impute import SimpleImputer
 
 
-class KNNImpute:
+class NMFImpute:
     def __init__(self, train_ds: pd.DataFrame):
         self.train_ds = train_ds
         self.require_fit = True
-        self.imputer = KNNImputer(n_neighbors=5, weights="uniform")
+        self.imputer = NMF(n_components=2)
 
     def fit(self):
         ds = self.train_ds.copy(deep=True)
