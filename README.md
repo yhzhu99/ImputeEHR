@@ -24,9 +24,9 @@ The example dataset is [TJH dataset](https://www.nature.com/articles/s42256-020-
 - [ ] spline
 - [x] k-nearest neighbor
 - [ ] multiple imputation by chained equations
-- [ ] random forest (e.g. MissForest)
+- [x] random forest (e.g. MissForest)
 - [ ] matrix factorization
-- [ ] PCA
+- [x] PCA
 - [ ] SoftImpute
 
 ### DL-based
