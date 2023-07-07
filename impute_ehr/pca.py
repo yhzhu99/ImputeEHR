@@ -76,7 +76,7 @@ class PCAImpute(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        ds : array-like of shape (n_samples, n_features)
+        ds : DataFrame of shape (n_samples, n_features)
             The input data to complete, where `n_samples` is the number of samples and
             `n_features` is the number of features.
             Col0 to col 3 do not need to be imputed.
@@ -98,6 +98,9 @@ class PCAImpute(BaseEstimator, TransformerMixin):
             data=X,
             columns=imputed_ds.columns
         )
+        # value should not be negative
+        imputed_ds.where(imputed_ds >= 0, 0, inplace=True)
+
         # get cols having datatype of time.
         # index should be reset to solve row mismatch bug
         rest_ds = ds.iloc[:, :4]
@@ -111,7 +114,7 @@ class PCAImpute(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        imputed_ds : array-like of shape (n_samples, n_features)
+        imputed_ds : DataFrame of shape (n_samples, n_features)
             The input data to complete, where `n_samples` is the number of samples and
             `n_features` is the number of features.
             All cols need to be imputed.
@@ -143,6 +146,7 @@ class PCAImpute(BaseEstimator, TransformerMixin):
             estimator_ = self.estimators_[0]
             X[X_nan] = estimator_.inverse_transform(
                 estimator_.transform(imputed))[X_nan]
+
         return X
 
 
