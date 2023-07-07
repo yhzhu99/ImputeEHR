@@ -64,7 +64,6 @@ class PCAImpute(BaseEstimator, TransformerMixin):
 
         return self
 
-
     def execute(self, ds: pd.DataFrame):
         ds = ds.copy(deep=True)
 
