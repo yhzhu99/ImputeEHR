@@ -7,12 +7,31 @@ class KNNImpute:
         self.imputer = KNNImputer(n_neighbors=5, weights="uniform")
 
     def fit(self):
+        """ Fit the imputer on train_ds.
+
+        Returns
+        -------
+        self : object
+            The fitted `KNNImputer` class instance.
+        """
         ds = self.train_ds.copy(deep=True)
         # cols of time datatype should not be involved in KNN.
         ds = ds.iloc[:, 4:]
-        self.imputer = self.imputer.fit(ds)
+        self.imputer.fit(ds)
 
     def execute(self, ds: pd.DataFrame):
+        """ Impute all missing values in ds.
+
+        Parameters
+        ----------
+        ds : array-like of shape (n_samples, n_features)
+            The input data to complete.
+            Col0 to col3 do not need to be imputed.
+
+        Returns
+        -------
+        X : array-like of shape (n_samples, n_output_features)
+        """
         ds = ds.copy(deep=True)
 
         # cols of time datatype should not be involved in KNN.

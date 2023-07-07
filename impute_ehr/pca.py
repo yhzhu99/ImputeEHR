@@ -16,6 +16,13 @@ class PCAImpute(BaseEstimator, TransformerMixin):
         self.tol = 1e-3
 
     def fit(self):
+        """ Fit the imputer on train_ds.
+
+        Returns
+        -------
+        self : object
+            The fitted `PCAImputer` class instance.
+        """
         ds = self.train_ds.copy(deep=True)
         # cols of time datatype should not be involved in PCA.
         ds = ds.iloc[:, 4:]
@@ -65,6 +72,19 @@ class PCAImpute(BaseEstimator, TransformerMixin):
         return self
 
     def execute(self, ds: pd.DataFrame):
+        """ Impute all missing values in ds.
+
+        Parameters
+        ----------
+        ds : array-like of shape (n_samples, n_features)
+            The input data to complete, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+            Col0 to col 3 do not need to be imputed.
+
+        Returns
+        -------
+        X : array-like of shape (n_samples, n_output_features)
+        """
         ds = ds.copy(deep=True)
 
         # cols of time datatype should not be involved in PCA.
@@ -85,8 +105,21 @@ class PCAImpute(BaseEstimator, TransformerMixin):
 
         return pd.concat([rest_ds, imputed_ds], axis=1)
 
-    # the real execute function. impute dataset with valid col datatype
+
     def transform(self, imputed_ds: pd.DataFrame):
+        """ The real execute function called by self.execute(). Impute dataset with valid col datatype.
+
+        Parameters
+        ----------
+        imputed_ds : array-like of shape (n_samples, n_features)
+            The input data to complete, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+            All cols need to be imputed.
+
+        Returns
+        -------
+        X : array-like of shape (n_samples, n_output_features)
+        """
         check_is_fitted(self, ['statistics_', 'estimators_', 'gamma_'])
         X = check_array(imputed_ds, copy=True, dtype=np.float64,
                         force_all_finite=False)
