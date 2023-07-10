@@ -23,11 +23,11 @@ The example dataset is [TJH dataset](https://www.nature.com/articles/s42256-020-
 - [ ] smoothing
 - [ ] spline
 - [x] k-nearest neighbor
-- [ ] multiple imputation by chained equations
+- [x] multiple imputation by chained equations
 - [x] random forest (e.g. MissForest)
 - [ ] matrix factorization
 - [x] PCA
-- [ ] SoftImpute
+- [x] SoftImpute
 
 ### DL-based
 
