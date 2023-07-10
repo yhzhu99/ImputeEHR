@@ -1,6 +1,5 @@
-import pandas as pd
 import numpy as np
-
+import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.decomposition import PCA
 from sklearn.impute import SimpleImputer
@@ -49,29 +48,15 @@ class PCAImpute(BaseEstimator, TransformerMixin):
             np.sqrt(min(X.shape))), whiten=True)]
 
         for iter in range(self.max_iter):
-            if len(self.estimators_) > 1:
-                for i in most_by_nan:
+            # rebuild the matrix to update the missing value
+            estimator_ = self.estimators_[0]
+            estimator_.fit(new_imputed)
+            new_imputed[X_nan] = estimator_.inverse_transform(
+                estimator_.transform(new_imputed))[X_nan]
 
-                    X_s = np.delete(new_imputed, i, 1)
-                    y_nan = X_nan[:, i]
-
-                    X_train = X_s[~y_nan]
-                    y_train = new_imputed[~y_nan, i]
-                    X_unk = X_s[y_nan]
-
-                    estimator_ = self.estimators_[i]
-                    estimator_.fit(X_train, y_train)
-                    if len(X_unk) > 0:
-                        new_imputed[y_nan, i] = estimator_.predict(X_unk)
-
-            else:
-                estimator_ = self.estimators_[0]
-                estimator_.fit(new_imputed)
-                new_imputed[X_nan] = estimator_.inverse_transform(
-                    estimator_.transform(new_imputed))[X_nan]
-
-            gamma = ((new_imputed-imputed)**2 /
-                     (1e-6+new_imputed.var(axis=0))).sum()/(1e-6+X_nan.sum())
+            # determine whether the model is convergent
+            gamma = ((new_imputed - imputed) ** 2 /
+                     (1e-6 + new_imputed.var(axis=0))).sum() / (1e-6 + X_nan.sum())
             self.gamma_.append(gamma)
             if np.abs(np.diff(self.gamma_[-2:])) < self.tol:
                 break
@@ -122,10 +107,8 @@ class PCAImpute(BaseEstimator, TransformerMixin):
                 X_unk = X_s[y_nan]
                 if len(X_unk) > 0:
                     X[y_nan, i] = estimator_.predict(X_unk)
-
         else:
             estimator_ = self.estimators_[0]
             X[X_nan] = estimator_.inverse_transform(
                 estimator_.transform(imputed))[X_nan]
-
         return X
