@@ -3,7 +3,7 @@ from pathlib import Path
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-import impute_ehr
+from impute_ehr import models
 
 # set random seed
 random_seed = 42
@@ -21,12 +21,13 @@ print("Samples of training set:", len(train_ds))
 print("Samples of validation set:", len(val_ds))
 print("Samples of test set:", len(test_ds))
 
-methods = ["ZeroImpute", "KNNImpute", "PCAImpute", "RandomForestImpute", "MICEImpute"]
+# methods = ["ZeroImpute", "KNNImpute", "PCAImpute", "RandomForestImpute", "MICEImpute"]
+methods = ["ZeroImpute"]
 
 for method in methods:
     # execute imputation pipeline
     # init the pipeline
-    pipeline = getattr(impute_ehr, method)(train_ds)
+    pipeline = getattr(models, method)(train_ds)
     # fit the imputation model if required
     if pipeline.require_fit:
         pipeline.fit()
