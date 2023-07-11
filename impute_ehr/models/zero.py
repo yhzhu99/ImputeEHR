@@ -4,8 +4,9 @@ from impute_ehr.data import preprocess
 
 
 class ZeroImpute:
-    def __init__(self, train_ds: list = None, val_ds: list = None):
+    def __init__(self, train_ds: list = None, val_ds: list = None, model=None):
         self.train_ds = train_ds
+        self.val_ds = val_ds
         self.require_fit = False
         self.require_val = False
         self.require_save_model = False
