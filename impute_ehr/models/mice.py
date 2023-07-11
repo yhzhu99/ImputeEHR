@@ -3,6 +3,7 @@ from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 from sklearn.linear_model import BayesianRidge
 
+
 class MICEImpute:
     def __init__(self, train_ds: pd.DataFrame):
         self.train_ds = train_ds

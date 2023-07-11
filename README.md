@@ -15,23 +15,23 @@ The example dataset is [TJH dataset](https://www.nature.com/articles/s42256-020-
 - [ ] `MeanImpute`
 - [ ] `MedianImpute`
 - [ ] `ModeImpute`
-- [ ] `GRUDSimpleImpute` (GRU-D Simple, concatenating the measurement with masking and time interval)
+- [ ] `SimpleImpute` (GRU-D Simple, concatenating the measurement with masking and time interval)
 
 ### ML-based
 
-- [ ] interpolation
-- [ ] smoothing
-- [ ] spline
-- [x] k-nearest neighbor
-- [x] multiple imputation by chained equations
-- [x] random forest (e.g. MissForest)
-- [ ] matrix factorization
-- [x] PCA
-- [x] SoftImpute
+- [ ] `InterpolationImpute`
+- [ ] `SmoothingImpute`
+- [ ] `SplineImpute`
+- [x] `KNNImpute`
+- [x] `MICEImpute` (multiple imputation by chained equations)
+- [x] `RFImpute` (Random Forest, e.g. MissForest)
+- [ ] `MFImpute` (matrix factorization)
+- [x] `PCAImpute`
+- [x] `SoftImpute`
 
 ### DL-based
 
-- [ ] MLP
-- [ ] RNN
-- [ ] AE (AutoEncoder)
-- [ ] GAN
+- [ ] `MLPImpute`
+- [ ] `RNNImpute`
+- [ ] `AEImpute` (AutoEncoder)
+- [ ] `GANImpute`
