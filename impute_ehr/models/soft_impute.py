@@ -58,6 +58,7 @@ class SoftImpute:
 # Please make sure to consult the original repository for the complete code,
 # licensing information, and any additional details regarding the Soft Impute
 # algorithm.
+
 def frob(Uold, Dsqold, Vold, U, Dsq, V):
     denom = (Dsqold ** 2).sum()
     utu = Dsq * (U.T.dot(Uold))
@@ -65,6 +66,7 @@ def frob(Uold, Dsqold, Vold, U, Dsq, V):
     uvprod = utu.dot(vtv).diagonal().sum()
     num = denom + (Dsqold ** 2).sum() - 2*uvprod
     return num / max(denom, 1e-9)
+
 class SoftImputeSolver:
     def __init__(self, J=2, thresh=1e-05, lambda_=0, maxit=100, random_state=None, verbose=False):
         self.J = J
