@@ -1,33 +1,43 @@
-import pandas as pd
 from sklearn.decomposition import NMF
-from sklearn.impute import SimpleImputer
 
+from impute_ehr.data import preprocess
 
 class NMFImpute:
-    def __init__(self, train_ds: pd.DataFrame):
+    def __init__(self, train_ds: list = None, val_ds: list = None, model=None):
         self.train_ds = train_ds
+        self.val_ds = val_ds
         self.require_fit = True
-        self.imputer = NMF(n_components=2)
+        self.require_val = False
+        self.require_save_model = True
+        if model is None:
+            self.imputer = NMF(n_components=2)
+        else:
+            self.imputer = model
 
     def fit(self):
-        ds = self.train_ds.copy(deep=True)
-        # cols of time datatype should not be involved in KNN.
-        ds = ds.iloc[:, 4:]
+        """ Fit the imputer on train_ds.
+
+        Returns
+        -------
+        self : object
+        The fitted `NMFImputer` class instance.
+        """
+        ds, lens = preprocess.flatten_to_matrix(self.train_ds)
         self.imputer = self.imputer.fit(ds)
+        return self
 
-    def execute(self, ds: pd.DataFrame):
-        ds = ds.copy(deep=True)
+    def execute(self, ds: list):
+        """ Impute all missing values in ds.
 
-        # cols of time datatype should not be involved in KNN.
-        imputed_ds = ds.iloc[:, 4:]
-        imputed_ds = pd.DataFrame(
-            data=self.imputer.transform(imputed_ds),
-            columns=imputed_ds.columns
-        )
+        Parameters
+        ----------
+        ds : a nested list. [patient, visit, feature]
 
-        # get cols having datatype of time.
-        # index should be reset to solve row mismatch bug
-        rest_ds = ds.iloc[:, :4]
-        rest_ds.reset_index(drop=True, inplace=True)
-
-        return pd.concat([rest_ds, imputed_ds], axis=1)
+        Returns
+        -------
+        imputed ds : a nested list. [patient, visit, feature]
+        """
+        ds, lens = preprocess.flatten_to_matrix(ds)
+        ds = self.imputer.transform(ds)
+        ds = preprocess.reverse_flatten_to_matrix(ds, lens)
+        return ds
