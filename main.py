@@ -11,9 +11,9 @@ val_x = pd.read_pickle('./datasets/impute_val_x.pkl')
 
 # methods = ["ZeroImpute", "KNNImpute", "PCAImpute", "RandomForestImpute", "MICEImpute"]
 method = "KNNImpute"
+
 # execute imputation pipeline
 # init the pipeline
-
 model_class = getattr(models, method)
 pipeline = model_class(train_x, val_x)
 
