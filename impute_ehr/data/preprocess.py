@@ -39,4 +39,12 @@ def flatten_to_matrix(data):
     """
     Flatten the nested list to matrix
     """
-    return np.array([x for patient in data for x in patient])
+    lengths = [len(x) for x in data]
+    return np.array([x for patient in data for x in patient]), lengths
+
+def reverse_flatten_to_matrix(data, lengths):
+    """
+    Reverse the flatten_to_matrix function
+    """
+    data = np.split(data, np.cumsum(lengths))[:-1]
+    return [x.tolist() for x in data]
