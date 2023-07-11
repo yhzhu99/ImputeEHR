@@ -2,17 +2,15 @@ from sklearn.decomposition import NMF
 
 from impute_ehr.data import preprocess
 
+
 class NMFImpute:
-    def __init__(self, train_ds: list = None, val_ds: list = None, model=None):
+    def __init__(self, train_ds: list = None, val_ds: list = None):
         self.train_ds = train_ds
         self.val_ds = val_ds
         self.require_fit = True
         self.require_val = False
         self.require_save_model = True
-        if model is None:
-            self.imputer = NMF(n_components=2)
-        else:
-            self.imputer = model
+        self.imputer = NMF(n_components=2)
 
     def fit(self):
         """ Fit the imputer on train_ds.

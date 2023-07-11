@@ -1,24 +1,22 @@
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 from sklearn.linear_model import BayesianRidge
+
 from impute_ehr.data import preprocess
 
 
 class MICEImpute:
-    def __init__(self, train_ds: list = None, val_ds: list = None, model=None):
+    def __init__(self, train_ds: list = None, val_ds: list = None):
         self.train_ds = train_ds
         self.val_ds = val_ds
         self.require_fit = True
         self.require_val = False
         self.require_save_model = True
-        if model is None:
-            self.imputer = IterativeImputer(
-                estimator=BayesianRidge(),
-                max_iter=10,
-                tol=1e-3
-            )
-        else:
-            self.imputer = model
+        self.imputer = IterativeImputer(
+            estimator=BayesianRidge(),
+            max_iter=10,
+            tol=1e-3
+        )
 
 
     def fit(self):

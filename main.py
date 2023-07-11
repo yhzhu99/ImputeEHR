@@ -3,14 +3,18 @@ import pandas as pd
 from impute_ehr import models
 from impute_ehr.data import preprocess
 
+#######################
+# training script
+#######################
+
 df = pd.read_csv("./datasets/example.csv")
 preprocess.export_patient_list_pickle(df)
 
 train_x = pd.read_pickle('./datasets/impute_train_x.pkl')
 val_x = pd.read_pickle('./datasets/impute_val_x.pkl')
 
-# methods = ["ZeroImpute", "KNNImpute", "PCAImpute", "RandomForestImpute", "MICEImpute", "SoftImpute"]
-method = "RandomForestImpute"
+# methods = ["ZeroImpute", "KNNImpute", "PCAImpute", "RFImpute", "MICEImpute", "SoftImpute"]
+method = "MICEImpute"
 
 # execute imputation pipeline
 # init the pipeline
@@ -25,9 +29,14 @@ if pipeline.require_fit:
 if pipeline.require_save_model:
     pd.to_pickle(pipeline.imputer, f"./checkpoints/{method}.ckpt")
 
+#######################
+# test script
+#######################
 # load the model and perform imputation
-model = pd.read_pickle(f"./checkpoints/{method}.ckpt")
 model_class = getattr(models, method)
-pipeline = model_class(model=model)
+pipeline = model_class()
+if pipeline.require_save_model:
+    model = pd.read_pickle(f"./checkpoints/{method}.ckpt")
+    pipeline.imputer = model
 test = pipeline.execute(val_x)
-# print(test)
+print(test)

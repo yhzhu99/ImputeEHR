@@ -2,17 +2,15 @@ import numpy as np
 
 from impute_ehr.data import preprocess
 
+
 class SoftImpute:
-    def __init__(self, train_ds: list = None, val_ds: list = None, model=None):
+    def __init__(self, train_ds: list = None, val_ds: list = None):
         self.train_ds = train_ds
         self.val_ds = val_ds
         self.require_fit = True
         self.require_val = False
         self.require_save_model = True
-        if model is None:
-            self.imputer = SoftImputeSolver()
-        else:
-            self.imputer = model
+        self.imputer = SoftImputeSolver()
 
     def fit(self):
         """ Fit the imputer on train_ds.

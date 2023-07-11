@@ -7,8 +7,9 @@ from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 from impute_ehr.data import preprocess
 
+
 class PCAImpute(BaseEstimator, TransformerMixin):
-    def __init__(self, train_ds: list = None, val_ds: list = None, model=None):
+    def __init__(self, train_ds: list = None, val_ds: list = None):
         self.train_ds = train_ds
         self.val_ds = val_ds
         self.require_fit = True
@@ -18,10 +19,7 @@ class PCAImpute(BaseEstimator, TransformerMixin):
         # this imputer is a list.
         # imputer[0] is a PCA model.
         # imputer[1] is just a SimpleImputer to impute the starting value before iteration.
-        if model is None:
-            self.imputer = [None, SimpleImputer(strategy='mean')]
-        else:
-            self.imputer = model
+        self.imputer = [None, SimpleImputer(strategy='mean')]
 
         self.max_iter = 10
         self.tol = 1e-3
