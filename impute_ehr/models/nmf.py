@@ -1,15 +1,18 @@
-import pandas as pd
 import h2o
 from sklearn.decomposition import NMF
-from sklearn.impute import SimpleImputer
+
+from impute_ehr.data import preprocess
 from h2o.estimators import H2OGeneralizedLowRankEstimator
 
 
 class NMFImpute:
-    def __init__(self, train_ds: pd.DataFrame):
+    def __init__(self, train_ds: list = None, val_ds: list = None):
         h2o.init()
-        self.train_ds = h2o.H2OFrame(train_ds)
+        self.train_ds = train_ds
+        self.val_ds = val_ds
         self.require_fit = True
+        self.require_val = False
+        self.require_save_model = True
         self.imputer = H2OGeneralizedLowRankEstimator(k=4,
                                                       loss="quadratic",
                                                       gamma_x=0.5,
@@ -20,22 +23,31 @@ class NMFImpute:
                                                       transform="standardize")
 
     def fit(self):
-        ds = self.train_ds.ascharacter().asnumeric()
-        # cols of time datatype should not be involved in NMF.
-        ds = ds[:, 4:]
-        self.imputer = self.imputer.train(training_frame=self.train_ds)
+        """ Fit the imputer on train_ds.
 
-    def execute(self, ds: pd.DataFrame):
-        ds = ds.copy(deep=True)
+        Returns
+        -------
+        self : object
+        The fitted `NMFImputer` class instance.
+        """
+        ds, lens = preprocess.flatten_to_matrix(self.train_ds)
         ds = h2o.H2OFrame(ds)
-        imputed_ds = ds[:, 4:]
-        imputed_ds = self.imputer.transform_frame(imputed_ds)
+        self.imputer = self.imputer.train(training_frame=ds)
+        return self
 
-        # get cols having datatype of time.
-        # index should be reset to solve row mismatch bug
-        rest_ds = ds[:, :4].as_data_frame()
-        rest_ds.reset_index(drop=True, inplace=True)
+    def execute(self, ds: list):
+        """ Impute all missing values in ds.
 
-        imputed_ds = imputed_ds.as_data_frame()
+        Parameters
+        ----------
+        ds : a nested list. [patient, visit, feature]
 
-        return pd.concat([rest_ds, imputed_ds], axis=1)
+        Returns
+        -------
+        imputed ds : a nested list. [patient, visit, feature]
+        """
+        ds, lens = preprocess.flatten_to_matrix(ds)
+        ds = h2o.H2OFrame(ds)
+        ds = self.imputer.transform_frame(ds)
+        ds = preprocess.reverse_flatten_to_matrix(ds, lens)
+        return ds

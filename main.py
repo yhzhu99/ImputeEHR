@@ -1,7 +1,14 @@
 import pandas as pd
-
+import h2o
+import os
+import numpy as np
+from joblib import dump, load
 from impute_ehr import models
 from impute_ehr.data import preprocess
+np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
+#######################
+# training script
+#######################
 
 df = pd.read_csv("./datasets/example.csv")
 preprocess.export_patient_list_pickle(df)
@@ -9,8 +16,8 @@ preprocess.export_patient_list_pickle(df)
 train_x = pd.read_pickle('./datasets/impute_train_x.pkl')
 val_x = pd.read_pickle('./datasets/impute_val_x.pkl')
 
-# methods = ["ZeroImpute", "KNNImpute", "PCAImpute", "RandomForestImpute", "MICEImpute"]
-method = "KNNImpute"
+# methods = ["ZeroImpute", "KNNImpute", "PCAImpute", "RFImpute", "MICEImpute", "SoftImpute"]
+method = "NMFImpute"
 
 # execute imputation pipeline
 # init the pipeline
@@ -23,10 +30,19 @@ if pipeline.require_fit:
 
 # save the imputation model
 if pipeline.require_save_model:
-    pd.to_pickle(pipeline.imputer, f"./checkpoints/{method}.ckpt")
+    # pd.to_pickle(pipeline.imputer, f"./checkpoints/{method}.ckpt")
+    model_path = h2o.save_model(model=pipeline.imputer,
+                                path="./checkpoints/{method}.ckpt", force=True)
 
+#######################
+# test script
+#######################
 # load the model and perform imputation
-model = pd.read_pickle(f"./checkpoints/{method}.ckpt")
 model_class = getattr(models, method)
-pipeline = model_class(model=model)
+pipeline = model_class()
+if pipeline.require_save_model:
+    # model = pd.read_pickle(f"./checkpoints/{method}.ckpt")
+    model = h2o.load_model(model_path)
+    pipeline.imputer = model
 test = pipeline.execute(val_x)
+print(test)

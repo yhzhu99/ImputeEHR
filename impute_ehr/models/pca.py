@@ -5,12 +5,22 @@ from sklearn.decomposition import PCA
 from sklearn.impute import SimpleImputer
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
+from impute_ehr.data import preprocess
+
 
 class PCAImpute(BaseEstimator, TransformerMixin):
-    def __init__(self, train_ds: pd.DataFrame):
+    def __init__(self, train_ds: list = None, val_ds: list = None):
         self.train_ds = train_ds
-        self.initial_imputer = SimpleImputer(strategy='mean')
+        self.val_ds = val_ds
         self.require_fit = True
+        self.require_val = False
+        self.require_save_model = True
+
+        # this imputer is a list.
+        # imputer[0] is a PCA model.
+        # imputer[1] is just a SimpleImputer to impute the starting value before iteration.
+        self.imputer = [None, SimpleImputer(strategy='mean')]
+
         self.max_iter = 10
         self.tol = 1e-3
 
@@ -29,27 +39,25 @@ class PCAImpute(BaseEstimator, TransformerMixin):
         self : object
             The fitted `PCAImputer` class instance.
         """
-        ds = self.train_ds.copy(deep=True)
-        # cols of time datatype should not be involved in PCA.
-        ds = ds.iloc[:, 4:]
+        ds, lens = preprocess.flatten_to_matrix(self.train_ds)
         X = check_array(ds, dtype=np.float64,
                         force_all_finite=False)
 
         X_nan = np.isnan(X)
         most_by_nan = X_nan.sum(axis=0).argsort()[::-1]
 
-        imputed = self.initial_imputer.fit_transform(X)
+        imputed = self.imputer[1].fit_transform(X)
         new_imputed = imputed.copy()
 
         self.statistics_ = np.ma.getdata(X)
         self.gamma_ = []
 
-        self.estimators_ = [PCA(n_components=int(
-            np.sqrt(min(X.shape))), whiten=True)]
+        self.imputer[0] = PCA(n_components=int(
+            np.sqrt(min(X.shape))), whiten=True)
 
         for iter in range(self.max_iter):
             # rebuild the matrix to update the missing value
-            estimator_ = self.estimators_[0]
+            estimator_ = self.imputer[0]
             estimator_.fit(new_imputed)
             new_imputed[X_nan] = estimator_.inverse_transform(
                 estimator_.transform(new_imputed))[X_nan]
@@ -64,51 +72,46 @@ class PCAImpute(BaseEstimator, TransformerMixin):
         return self
 
     def execute(self, ds: pd.DataFrame):
-        ds = ds.copy(deep=True)
+        """ Impute all missing values in ds.
 
-        # cols of time datatype should not be involved in PCA.
-        imputed_ds = ds.iloc[:, 4:]
+        Parameters
+        ----------
+        ds : a nested list. [patient, visit, feature]
 
-        # call the real execute function to impute ds
-        X = self.transform(imputed_ds)
+        Returns
+        -------
+        imputed ds : a nested list. [patient, visit, feature]
+        """
+        ds, lens = preprocess.flatten_to_matrix(ds)
+        ds = self.transform(ds)
+        ds = preprocess.reverse_flatten_to_matrix(ds, lens)
+        return ds
 
-        # get imputed result with column name
-        imputed_ds = pd.DataFrame(
-            data=X,
-            columns=imputed_ds.columns
-        )
-        # value should not be negative
-        imputed_ds.where(imputed_ds >= 0, 0, inplace=True)
+    def transform(self, imputed_ds: np.ndarray):
+        """ The real execute function called by self.execute(). Impute dataset with valid col datatype.
 
-        # get cols having datatype of time.
-        # index should be reset to solve row mismatch bug
-        rest_ds = ds.iloc[:, :4]
-        rest_ds.reset_index(drop=True, inplace=True)
+        Parameters
+        ----------
+        imputed_ds : array-like of shape (n_samples, n_features)
+            The input data to complete, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+            All cols need to be imputed.
 
-        return pd.concat([rest_ds, imputed_ds], axis=1)
+        Returns
+        -------
+        X : array-like of shape (n_samples, n_output_features)
+        """
+        # this class instance can work when it is fitted or inited with a given imputer, so we only need to check whether it has an imputer.
+        if self.imputer is None:
+            raise AttributeError("RandomForestImputer is expected before execute.")
 
-    # the real execute function. impute dataset with valid col datatype
-    def transform(self, imputed_ds: pd.DataFrame):
-        check_is_fitted(self, ['statistics_', 'estimators_', 'gamma_'])
         X = check_array(imputed_ds, copy=True, dtype=np.float64,
                         force_all_finite=False)
-        if X.shape[1] != self.statistics_.shape[1]:
-            raise ValueError("X has %d features per sample, expected %d"
-                             % (X.shape[1], self.statistics_.shape[1]))
 
         X_nan = np.isnan(X)
-        imputed = self.initial_imputer.transform(X)
+        imputed = self.imputer[1].transform(X)
 
-        if len(self.estimators_) > 1:
-            for i, estimator_ in enumerate(self.estimators_):
-                X_s = np.delete(imputed, i, 1)
-                y_nan = X_nan[:, i]
+        estimator_ = self.imputer[0]
+        X[X_nan] = estimator_.inverse_transform(estimator_.transform(imputed))[X_nan]
 
-                X_unk = X_s[y_nan]
-                if len(X_unk) > 0:
-                    X[y_nan, i] = estimator_.predict(X_unk)
-        else:
-            estimator_ = self.estimators_[0]
-            X[X_nan] = estimator_.inverse_transform(
-                estimator_.transform(imputed))[X_nan]
         return X
