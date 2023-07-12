@@ -23,46 +23,54 @@ class RandomForestImpute(BaseEstimator, TransformerMixin):
         self : object
             The fitted `PCAImputer` class instance.
         """
+        # deepcopy
         ds = self.train_ds.copy(deep=True)
         # cols of time datatype should not be involved in PCA.
         ds = ds.iloc[:, 4:]
+        # make sure datatype of a col is float, na or inf
         X = check_array(ds, dtype=np.float64,
                         force_all_finite=False)
 
+        # get the col number in descending order by the number of na.
+        # [start:end:step], end=-1 means the last element, step=-1 means from back to front.
         X_nan = np.isnan(X)
         most_by_nan = X_nan.sum(axis=0).argsort()[::-1]
 
+        # just impute X with SimpleImputer as the starting value
         imputed = self.initial_imputer.fit_transform(X)
         new_imputed = imputed.copy()
 
+        # get data of masked_array
         self.statistics_ = np.ma.getdata(X)
         self.gamma_ = []
 
+        # RandomForestRegressor for each col
         self.estimators_ = [RandomForestRegressor(
             n_estimators=20, n_jobs=-1, random_state=i) for i in range(X.shape[1])]
 
+        # start iteration
         for iter in range(self.max_iter):
-            if len(self.estimators_) > 1:
-                for i in most_by_nan:
+            # update estimator of each col
+            for i in most_by_nan:
+                # del the current col
+                X_s = np.delete(new_imputed, i, 1)
+                # nan rows in this col
+                y_nan = X_nan[:, i]
+                # data of ~nan rows
+                X_train = X_s[~y_nan]
+                y_train = new_imputed[~y_nan, i]
+                # data of nan rows
+                X_unk = X_s[y_nan]
 
-                    X_s = np.delete(new_imputed, i, 1)
-                    y_nan = X_nan[:, i]
+                # train estimator[i]
+                # use the imputed data from the last iteration as Y to carry out supervised learning
+                estimator_ = self.estimators_[i]
+                estimator_.fit(X_train, y_train)
+                # impute the nan row in this col with the corresponding estimator
+                if len(X_unk) > 0:
+                    new_imputed[y_nan, i] = estimator_.predict(X_unk)
 
-                    X_train = X_s[~y_nan]
-                    y_train = new_imputed[~y_nan, i]
-                    X_unk = X_s[y_nan]
-
-                    estimator_ = self.estimators_[i]
-                    estimator_.fit(X_train, y_train)
-                    if len(X_unk) > 0:
-                        new_imputed[y_nan, i] = estimator_.predict(X_unk)
-
-            else:
-                estimator_ = self.estimators_[0]
-                estimator_.fit(new_imputed)
-                new_imputed[X_nan] = estimator_.inverse_transform(
-                    estimator_.transform(new_imputed))[X_nan]
-
+            # determine whether the model is convergent
             gamma = ((new_imputed-imputed)**2 /
                      (1e-6+new_imputed.var(axis=0))).sum()/(1e-6+X_nan.sum())
             self.gamma_.append(gamma)
