@@ -57,13 +57,6 @@ class SoftImpute:
 # licensing information, and any additional details regarding the Soft Impute
 # algorithm.
 
-def frob(Uold, Dsqold, Vold, U, Dsq, V):
-    denom = (Dsqold ** 2).sum()
-    utu = Dsq * (U.T.dot(Uold))
-    vtv = Dsqold * (Vold.T.dot(V))
-    uvprod = utu.dot(vtv).diagonal().sum()
-    num = denom + (Dsqold ** 2).sum() - 2*uvprod
-    return num / max(denom, 1e-9)
 
 class SoftImputeSolver:
     def __init__(self, J=2, thresh=1e-05, lambda_=0, maxit=100, random_state=None, verbose=False):
@@ -77,8 +70,16 @@ class SoftImputeSolver:
         self.d = None
         self.v = None
 
+    def frob(Uold, Dsqold, Vold, U, Dsq, V):
+        denom = (Dsqold ** 2).sum()
+        utu = Dsq * (U.T.dot(Uold))
+        vtv = Dsqold * (Vold.T.dot(V))
+        uvprod = utu.dot(vtv).diagonal().sum()
+        num = denom + (Dsqold ** 2).sum() - 2*uvprod
+        return num / max(denom, 1e-9)
+
     def fit(self, X):
-        n,m = X.shape
+        n, m = X.shape
         xnas = np.isnan(X)
         nz = m*n - xnas.sum()
         xfill = X.copy()
@@ -124,9 +125,9 @@ class SoftImputeSolver:
             if self.verbose:
                 print('iter: %4d ratio = %.5f' % (iters, ratio))
 
-        self.u = U[:,:self.J]
+        self.u = U[:, :self.J]
         self.d = Dsq[:self.J]
-        self.v = V[:,:self.J]
+        self.v = V[:, :self.J]
         return self
 
     def suv(self, vd):
