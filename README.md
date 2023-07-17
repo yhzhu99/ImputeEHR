@@ -10,22 +10,22 @@ The example dataset is [TJH dataset](https://www.nature.com/articles/s42256-020-
 ### Rule-based
 
 
-- [ ] `LOCFImpute` (last-observation-carried-forward)
+- [x] `LOCFImpute` (last-observation-carried-forward)
 - [x] `ZeroImpute`
-- [ ] `MeanImpute`
-- [ ] `MedianImpute`
-- [ ] `ModeImpute`
+- [x] `MeanImpute`
+- [x] `MedianImpute`
+- [x] `ModeImpute`
 - [ ] `SimpleImpute` (GRU-D Simple, concatenating the measurement with masking and time interval)
 
 ### ML-based
 
-- [ ] `InterpolationImpute`
-- [ ] `SmoothingImpute`
-- [ ] `SplineImpute`
+- [x] `InterpolationImpute`
+- [x] `SmoothingImpute`
+- [x] `SplineImpute`
 - [x] `KNNImpute`
 - [x] `MICEImpute` (multiple imputation by chained equations)
 - [x] `RFImpute` (Random Forest, e.g. MissForest)
-- [ ] `MFImpute` (matrix factorization)
+- [x] `MFImpute` (matrix factorization)
 - [x] `PCAImpute`
 - [x] `SoftImpute`
 

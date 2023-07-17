@@ -13,8 +13,10 @@ preprocess.export_patient_list_pickle(df)
 train_x = pd.read_pickle('./datasets/impute_train_x.pkl')
 val_x = pd.read_pickle('./datasets/impute_val_x.pkl')
 
-# methods = ["ZeroImpute", "KNNImpute", "PCAImpute", "RFImpute", "MICEImpute", "SoftImpute"]
-method = "KNNImpute"
+# methods = ["ZeroImpute", "KNNImpute", "PCAImpute", "RFImpute", "MICEImpute", "SoftImpute",
+# "InterpolationImpute""."NMFImpute", "RFImpute", "MeanImpute", "MedianImpute", "MostFrequentImpute", "ForwardImpute", "BackwardImpute"]
+method = "BackwardImpute"
+
 
 # execute imputation pipeline
 # init the pipeline
@@ -28,8 +30,6 @@ if pipeline.require_fit:
 # save the imputation model
 if pipeline.require_save_model:
     pd.to_pickle(pipeline.imputer, f"./checkpoints/{method}.ckpt")
-    # model_path = h2o.save_model(model=pipeline.imputer,
-    # path="./checkpoints/{method}.ckpt", force=True)
 
 #######################
 # test script
@@ -39,7 +39,6 @@ model_class = getattr(models, method)
 pipeline = model_class()
 if pipeline.require_save_model:
     model = pd.read_pickle(f"./checkpoints/{method}.ckpt")
-    # model = h2o.load_model(model_path)
     pipeline.imputer = model
 test = pipeline.execute(val_x)
 print(test)
