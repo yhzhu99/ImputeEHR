@@ -3,6 +3,8 @@
 .vscode
 datasets/
 checkpoints/
+pypots/
+examples/
 ############################
 
 # Byte-compiled / optimized / DLL files
