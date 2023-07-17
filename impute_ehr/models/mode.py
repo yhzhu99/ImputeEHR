@@ -3,7 +3,7 @@ from sklearn.impute import SimpleImputer
 from impute_ehr.data import preprocess
 
 
-class MostFrequentImpute:
+class ModeImpute:
     def __init__(self, train_ds: list = None, val_ds: list = None):
         self.train_ds = train_ds
         self.val_ds = val_ds

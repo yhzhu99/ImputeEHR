@@ -14,7 +14,7 @@ train_x = pd.read_pickle('./datasets/impute_train_x.pkl')
 val_x = pd.read_pickle('./datasets/impute_val_x.pkl')
 
 # methods = ["ZeroImpute", "KNNImpute", "PCAImpute", "RFImpute", "MICEImpute", "SoftImpute",
-# "InterpolationImpute""."NMFImpute", "RFImpute", "MeanImpute", "MedianImpute", "MostFrequentImpute", "ForwardImpute", "BackwardImpute"]
+# "InterpolationImpute""."NMFImpute", "RFImpute", "MeanImpute", "MedianImpute", "ModeImpute", "ForwardImpute", "BackwardImpute"]
 method = "BackwardImpute"
 
 

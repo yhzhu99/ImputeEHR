@@ -7,7 +7,7 @@ from .soft import SoftImpute
 from .zero import ZeroImpute
 from .mean import MeanImpute
 from .median import MedianImpute
-from .most_frequent import MostFrequentImpute
+from .mode import ModeImpute
 from .forward import ForwardImpute
 from .backward import BackwardImpute
 from .interpolation import InterpolationImpute
